@@ -8,6 +8,12 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import DoctorsManagement from "./pages/admin/DoctorsManagement";
+import SessionsManagement from "./pages/admin/SessionsManagement";
+import AppointmentsManagement from "./pages/admin/AppointmentsManagement";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -20,6 +26,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/doctors" element={<DoctorsManagement />} />
+            <Route path="/admin/sessions" element={<SessionsManagement />} />
+            <Route path="/admin/appointments" element={<AppointmentsManagement />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
