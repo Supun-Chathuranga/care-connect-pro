@@ -75,6 +75,8 @@ export default function DoctorsManagement() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [newDoctor, setNewDoctor] = useState<NewDoctor>(initialNewDoctor);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -153,6 +155,42 @@ export default function DoctorsManagement() {
     } catch (error: any) {
       console.error("Error adding doctor:", error);
       toast.error(error.message || "Failed to add doctor");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditDoctor = (doctor: Doctor) => {
+    setEditingDoctor(doctor);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateDoctor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDoctor) return;
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from("doctors")
+        .update({
+          specialty: editingDoctor.specialty,
+          qualification: editingDoctor.qualification,
+          experience_years: editingDoctor.experience_years,
+          consultation_fee: editingDoctor.consultation_fee,
+          bio: editingDoctor.bio,
+        })
+        .eq("id", editingDoctor.id);
+
+      if (error) throw error;
+
+      toast.success("Doctor updated successfully!");
+      setIsEditDialogOpen(false);
+      setEditingDoctor(null);
+      fetchDoctors();
+    } catch (error: any) {
+      console.error("Error updating doctor:", error);
+      toast.error(error.message || "Failed to update doctor");
     } finally {
       setIsSubmitting(false);
     }
@@ -380,6 +418,10 @@ export default function DoctorsManagement() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEditDoctor(doctor)}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleToggleActive(doctor.id, doctor.is_active)}>
                       {doctor.is_active ? "Deactivate" : "Activate"}
                     </DropdownMenuItem>
@@ -418,6 +460,91 @@ export default function DoctorsManagement() {
           ))
         )}
       </div>
+
+      {/* Edit Doctor Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Doctor</DialogTitle>
+          </DialogHeader>
+          {editingDoctor && (
+            <form onSubmit={handleUpdateDoctor} className="space-y-4 mt-4">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium">Dr. {editingDoctor.profiles?.full_name}</p>
+                <p className="text-sm text-muted-foreground">{editingDoctor.profiles?.email}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Specialty</Label>
+                <Select
+                  value={editingDoctor.specialty}
+                  onValueChange={(v) => setEditingDoctor({ ...editingDoctor, specialty: v as Specialty })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SPECIALTIES).map(([key, value]) => (
+                      <SelectItem key={key} value={key}>
+                        {value.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Qualification</Label>
+                <Input
+                  value={editingDoctor.qualification}
+                  onChange={(e) => setEditingDoctor({ ...editingDoctor, qualification: e.target.value })}
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Experience (years)</Label>
+                  <Input
+                    type="number"
+                    value={editingDoctor.experience_years || 0}
+                    onChange={(e) => setEditingDoctor({ ...editingDoctor, experience_years: parseInt(e.target.value) })}
+                    min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Consultation Fee (LKR)</Label>
+                  <Input
+                    type="number"
+                    value={editingDoctor.consultation_fee || 0}
+                    onChange={(e) => setEditingDoctor({ ...editingDoctor, consultation_fee: parseFloat(e.target.value) })}
+                    min={0}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bio</Label>
+                <Textarea
+                  value={editingDoctor.bio || ""}
+                  onChange={(e) => setEditingDoctor({ ...editingDoctor, bio: e.target.value })}
+                  placeholder="Brief description about the doctor..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

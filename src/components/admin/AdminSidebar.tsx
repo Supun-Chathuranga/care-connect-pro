@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
-  { icon: Users, label: "Doctors", href: "/admin/doctors" },
+  { icon: Stethoscope, label: "Doctors", href: "/admin/doctors" },
+  { icon: Users, label: "Patients", href: "/admin/patients" },
   { icon: Calendar, label: "Sessions", href: "/admin/sessions" },
   { icon: ClipboardList, label: "Appointments", href: "/admin/appointments" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
