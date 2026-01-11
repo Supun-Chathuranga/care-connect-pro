@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PatientLayout } from "@/components/patient/PatientLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,19 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Mail, Phone, Save, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Save, Loader2, Bell, Shield, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 
 export default function PatientProfile() {
   const { user, profile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || "",
-    email: profile?.email || "",
-    phone: profile?.phone || "",
+    full_name: "",
+    email: "",
+    phone: "",
   });
+  const [notifications, setNotifications] = useState({
+    appointmentReminders: true,
+    smsNotifications: true,
+    emailNotifications: false,
+  });
+
+  // Sync form data with profile when profile loads or changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+      });
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -161,19 +179,90 @@ export default function PatientProfile() {
           </div>
         </motion.div>
 
-        {/* Account Settings */}
+        {/* Notification Preferences */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-card rounded-2xl border border-border shadow-soft mt-6 p-6"
         >
-          <h3 className="font-semibold text-foreground mb-4">Account Settings</h3>
+          <div className="flex items-center gap-2 mb-6">
+            <Bell className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold text-foreground">Notification Preferences</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <div>
+                <p className="font-medium">Appointment Reminders</p>
+                <p className="text-sm text-muted-foreground">
+                  Get reminded before your appointments
+                </p>
+              </div>
+              <Switch
+                checked={notifications.appointmentReminders}
+                onCheckedChange={(checked) =>
+                  setNotifications({ ...notifications, appointmentReminders: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <div>
+                <p className="font-medium">SMS Notifications</p>
+                <p className="text-sm text-muted-foreground">
+                  Receive updates via SMS
+                </p>
+              </div>
+              <Switch
+                checked={notifications.smsNotifications}
+                onCheckedChange={(checked) =>
+                  setNotifications({ ...notifications, smsNotifications: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-medium">Email Notifications</p>
+                <p className="text-sm text-muted-foreground">
+                  Receive updates via email
+                </p>
+              </div>
+              <Switch
+                checked={notifications.emailNotifications}
+                onCheckedChange={(checked) =>
+                  setNotifications({ ...notifications, emailNotifications: checked })
+                }
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Account Settings */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-card rounded-2xl border border-border shadow-soft mt-6 p-6"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <Shield className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold text-foreground">Account Settings</h3>
+          </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-border">
               <div>
                 <p className="font-medium">Account ID</p>
-                <p className="text-sm text-muted-foreground">{user?.id}</p>
+                <p className="text-sm text-muted-foreground font-mono">{user?.id?.slice(0, 8)}...</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Member Since</p>
+                  <p className="text-sm text-muted-foreground">
+                    {user?.created_at ? format(new Date(user.created_at), "MMMM d, yyyy") : "N/A"}
+                  </p>
+                </div>
               </div>
             </div>
             <div className="flex items-center justify-between py-3">
