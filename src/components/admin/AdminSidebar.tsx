@@ -8,6 +8,9 @@ import {
   Settings,
   Stethoscope,
   LogOut,
+  MessageSquare,
+  KeyRound,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -18,6 +21,9 @@ const menuItems = [
   { icon: Users, label: "Patients", href: "/admin/patients" },
   { icon: Calendar, label: "Sessions", href: "/admin/sessions" },
   { icon: ClipboardList, label: "Appointments", href: "/admin/appointments" },
+  { icon: MessageSquare, label: "SMS Logs", href: "/admin/sms-logs" },
+  { icon: KeyRound, label: "OTP Verifications", href: "/admin/otp-verifications" },
+  { icon: Bell, label: "Notifications", href: "/admin/notifications" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
