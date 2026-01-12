@@ -15,6 +15,9 @@ import PatientsManagement from "./pages/admin/PatientsManagement";
 import SessionsManagement from "./pages/admin/SessionsManagement";
 import AppointmentsManagement from "./pages/admin/AppointmentsManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
+import SmsLogsPage from "./pages/admin/SmsLogsPage";
+import OtpVerificationsPage from "./pages/admin/OtpVerificationsPage";
+import NotificationsPage from "./pages/admin/NotificationsPage";
 
 // Patient Pages
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -48,6 +51,9 @@ const App = () => (
             <Route path="/admin/patients" element={<PatientsManagement />} />
             <Route path="/admin/sessions" element={<SessionsManagement />} />
             <Route path="/admin/appointments" element={<AppointmentsManagement />} />
+            <Route path="/admin/sms-logs" element={<SmsLogsPage />} />
+            <Route path="/admin/otp-verifications" element={<OtpVerificationsPage />} />
+            <Route path="/admin/notifications" element={<NotificationsPage />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             
             {/* Patient Routes */}
