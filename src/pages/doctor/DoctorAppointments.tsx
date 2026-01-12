@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { Calendar, Clock, Phone, Search, CheckCircle, XCircle, FileText, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
+import { sendAppointmentNotification } from "@/lib/sms";
 
 interface Appointment {
   id: string;
@@ -120,6 +121,24 @@ export default function DoctorAppointments() {
 
       if (error) throw error;
       toast.success(`Appointment ${newStatus}`);
+      
+      // Send SMS notification based on status change
+      const notificationMap: Record<string, "confirmation" | "cancelled" | "completed"> = {
+        confirmed: "confirmation",
+        cancelled: "cancelled",
+        completed: "completed",
+      };
+      
+      if (notificationMap[newStatus]) {
+        sendAppointmentNotification(appointmentId, notificationMap[newStatus])
+          .then((result) => {
+            if (result.success) {
+              console.log(`${newStatus} notification sent`);
+            }
+          })
+          .catch((err) => console.error("SMS notification error:", err));
+      }
+      
       fetchDoctorAndAppointments();
     } catch (error) {
       console.error("Error updating appointment:", error);

@@ -14,6 +14,7 @@ import { format, addDays, isBefore, startOfToday } from "date-fns";
 import { Calendar, Clock, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { sendAppointmentNotification } from "@/lib/sms";
 
 interface Doctor {
   id: string;
@@ -187,7 +188,7 @@ export default function BookAppointment() {
     try {
       const session = sessions.find((s) => s.day_of_week === selectedDate.getDay());
       
-      const { error } = await supabase.from("appointments").insert({
+      const { data: appointment, error } = await supabase.from("appointments").insert({
         patient_id: user.id,
         doctor_id: doctorId,
         session_id: session?.id,
@@ -195,9 +196,20 @@ export default function BookAppointment() {
         appointment_time: selectedTime,
         reason: reason || null,
         status: "pending",
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Send SMS confirmation notification
+      if (appointment) {
+        sendAppointmentNotification(appointment.id, "confirmation")
+          .then((result) => {
+            if (result.success) {
+              console.log("Confirmation SMS sent");
+            }
+          })
+          .catch((err) => console.error("SMS notification error:", err));
+      }
 
       toast.success("Appointment booked successfully!");
       navigate("/patient/appointments");

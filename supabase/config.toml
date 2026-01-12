@@ -1,1 +1,13 @@
 project_id = "anedxijrqejmyavrbybg"
+
+[functions.send-sms]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.send-appointment-notification]
+verify_jwt = false
