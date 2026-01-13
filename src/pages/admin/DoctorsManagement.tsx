@@ -119,33 +119,25 @@ export default function DoctorsManagement() {
     setIsSubmitting(true);
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newDoctor.email,
-        password: newDoctor.password,
-        options: {
-          data: {
-            full_name: newDoctor.fullName,
-            phone: newDoctor.phone,
-            role: "doctor",
-          },
+      // Call edge function to create doctor (avoids changing admin session)
+      const { data, error } = await supabase.functions.invoke("create-doctor", {
+        body: {
+          email: newDoctor.email,
+          password: newDoctor.password,
+          fullName: newDoctor.fullName,
+          phone: newDoctor.phone,
+          specialty: newDoctor.specialty,
+          qualification: newDoctor.qualification,
+          experienceYears: newDoctor.experienceYears,
+          consultationFee: newDoctor.consultationFee,
+          bio: newDoctor.bio,
         },
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
 
-      if (authData.user) {
-        // Create doctor record
-        const { error: doctorError } = await supabase.from("doctors").insert({
-          user_id: authData.user.id,
-          specialty: newDoctor.specialty,
-          qualification: newDoctor.qualification,
-          experience_years: newDoctor.experienceYears,
-          consultation_fee: newDoctor.consultationFee,
-          bio: newDoctor.bio,
-        });
-
-        if (doctorError) throw doctorError;
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast.success("Doctor added successfully!");
