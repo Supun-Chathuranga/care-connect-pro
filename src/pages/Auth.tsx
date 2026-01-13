@@ -35,21 +35,36 @@ export default function Auth() {
   // Common state
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<UserRole>("patient");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
   
   // OTP state
   const [otp, setOtp] = useState("");
   const [devOtp, setDevOtp] = useState<string | null>(null);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, role: userRole, loading: authLoading } = useAuth();
   const { sendOtp, verifyOtp, loading: otpLoading, otpSent, setOtpSent } = usePhoneOtp();
   const navigate = useNavigate();
 
+  // Redirect based on role after authentication
   useEffect(() => {
-    if (user) {
-      navigate("/");
+    if (user && userRole && !authLoading) {
+      const dashboardPath = getDashboardPath(userRole);
+      navigate(dashboardPath);
     }
-  }, [user, navigate]);
+  }, [user, userRole, authLoading, navigate]);
+
+  const getDashboardPath = (userRole: string): string => {
+    switch (userRole) {
+      case "admin":
+        return "/admin";
+      case "doctor":
+        return "/doctor";
+      case "patient":
+        return "/patient";
+      default:
+        return "/";
+    }
+  };
 
   // Reset OTP state when switching methods
   useEffect(() => {
@@ -69,7 +84,7 @@ export default function Auth() {
           toast.error(error.message || "Failed to sign in");
         } else {
           toast.success("Welcome back!");
-          navigate("/");
+          // Role-based redirect is handled by useEffect
         }
       } else {
         if (!fullName || !phone) {
@@ -77,7 +92,7 @@ export default function Auth() {
           setLoading(false);
           return;
         }
-        const { error } = await signUp(email, password, fullName, phone, role);
+        const { error } = await signUp(email, password, fullName, phone, selectedRole);
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error("This email is already registered. Please sign in.");
@@ -86,7 +101,7 @@ export default function Auth() {
           }
         } else {
           toast.success("Account created successfully!");
-          navigate("/");
+          // Role-based redirect is handled by useEffect
         }
       }
     } catch (error: any) {
@@ -224,7 +239,7 @@ export default function Auth() {
 
                     <div className="space-y-2">
                       <Label htmlFor="role">I am a</Label>
-                      <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
+                      <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as UserRole)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select role" />
                         </SelectTrigger>
@@ -357,7 +372,7 @@ export default function Auth() {
 
                     <div className="space-y-2">
                       <Label htmlFor="roleOtp">I am a</Label>
-                      <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
+                      <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as UserRole)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select role" />
                         </SelectTrigger>
